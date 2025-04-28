@@ -12,9 +12,9 @@ interface LoveAspectProps {
 
 export default function LoveAspect({ selectedAspect, onSelect, onNext, onPrev }: LoveAspectProps) {
   const aspects = [
-    { id: "amor", label: "Amor e Relacionamento" },
-    { id: "saude", label: "Saúde e Vitalidade" },
-    { id: "carreira", label: "Carreira e Destino" },
+    { id: "amor", label: "Amor e Relacionamento", available: true, emoji: "❤️" }, //Added emoji
+    { id: "saude", label: "Saúde e Vitalidade", available: false, emoji: "💪" }, //Added emoji
+    { id: "carreira", label: "Carreira e Destino", available: false, emoji: "💼" }, //Added emoji
   ]
 
   const handleNext = () => {
@@ -38,35 +38,25 @@ export default function LoveAspect({ selectedAspect, onSelect, onNext, onPrev }:
       </h2>
 
       <div className="grid gap-4 mt-2">
-        {aspects.map((aspect) => {
-          const isSelected = selectedAspect === aspect.id
-          const bgColor = isSelected
-            ? aspect.id === "amor"
-              ? "bg-blue-100"
-              : aspect.id === "saude"
-                ? "bg-blue-100"
-                : "bg-blue-500"
-            : "bg-blue-50"
-
-          const textColor = isSelected && aspect.id === "carreira" ? "text-white" : ""
-
-          return (
-            <div
-              key={aspect.id}
-              className={`rounded-lg p-4 cursor-pointer transition-all duration-300 ${bgColor} ${textColor}`}
-              onClick={() => onSelect(aspect.id)}
-            >
-              <div className="text-center py-2">{aspect.label}</div>
+        {aspects.map((aspect) => (
+          <div
+            key={aspect.id}
+            className={`option-card ${!aspect.available ? 'cursor-not-allowed opacity-60' : ''} ${selectedAspect === aspect.id ? "selected" : ""}`}
+            onClick={() => aspect.available && onSelect(aspect.id)}
+          >
+            <div className="flex items-center justify-between">
+              <span>{aspect.emoji} {aspect.label}</span> {/* Added emoji display */}
+              {!aspect.available ? (
+                <span className="text-sm text-muted-foreground">Em breve</span>
+              ) : selectedAspect === aspect.id && (
+                <div className="h-4 w-4 rounded-full bg-primary"></div>
+              )}
             </div>
-          )
-        })}
+          </div>
+        ))}
       </div>
 
-      <Button
-        onClick={handleNext}
-        className="w-full mt-4 transition-all duration-300 hover:scale-[1.02]"
-        disabled={!selectedAspect}
-      >
+      <Button onClick={handleNext} className="w-full mt-4" disabled={!selectedAspect}>
         Continuar
       </Button>
     </div>

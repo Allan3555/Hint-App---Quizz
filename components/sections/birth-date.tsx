@@ -50,10 +50,23 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
       try {
         const parsedDate = parse(value, "dd/MM/yyyy", new Date())
         if (isValid(parsedDate)) {
-          if (parsedDate > new Date()) {
+          const today = new Date()
+          const age = today.getFullYear() - parsedDate.getFullYear()
+          const m = today.getMonth() - parsedDate.getMonth()
+          if (m < 0 || (m === 0 && today.getDate() < parsedDate.getDate())) {
+            age--
+          }
+
+          if (parsedDate > today) {
             setError("A data não pode ser no futuro")
             return
           }
+
+          if (age < 16) {
+            setError("Você precisa ter pelo menos 16 anos")
+            return
+          }
+
           setDate(parsedDate)
 
           // Extract day, month, year directly from the parsed date

@@ -12,9 +12,9 @@ interface DecisionStyleProps {
 
 export default function DecisionStyle({ selectedStyle, onSelect, onNext, onPrev }: DecisionStyleProps) {
   const styles = [
-    { id: "emotivo", label: "Emotiva (uso mais o coração)" },
-    { id: "racional", label: "Racional (uso a lógica)" },
-    { id: "ambos", label: "Ambos" },
+    { id: "emotivo", label: "Emotiva (uso mais o coração)", emoji: "❤️" },
+    { id: "racional", label: "Racional (uso a lógica)", emoji: "🧠" },
+    { id: "ambos", label: "Ambos", emoji: "✨" },
   ]
 
   const handleNext = () => {
@@ -45,7 +45,10 @@ export default function DecisionStyle({ selectedStyle, onSelect, onNext, onPrev 
             onClick={() => onSelect(style.id)}
           >
             <div className="flex items-center justify-between">
-              <span>{style.label}</span>
+              <span className="flex items-center gap-2">
+                <span className="text-xl">{style.emoji}</span>
+                <span>{style.label}</span>
+              </span>
               {selectedStyle === style.id && <div className="h-4 w-4 rounded-full bg-primary"></div>}
             </div>
           </div>

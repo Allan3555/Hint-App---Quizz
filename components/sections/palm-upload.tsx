@@ -1,8 +1,9 @@
 "use client"
 
 import type React from "react"
-
+import Webcam from "react-webcam"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { ChevronLeft, Camera, Upload, Loader2, RefreshCw, X } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
@@ -25,6 +26,25 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
   const analyzeCanvasRef = useRef<HTMLCanvasElement>(null)
   const [animationFrame, setAnimationFrame] = useState(0)
   const [stream, setStream] = useState<MediaStream | null>(null)
+const webcamRef = useRef<Webcam>(null)
+const [showWebcam, setShowWebcam] = useState(false)
+
+  const handleCapture = () => {
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot()
+      if (imageSrc) {
+        setCapturedImage(imageSrc)
+        // Converter base64 para File
+        fetch(imageSrc)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], "palm-photo.jpg", { type: "image/jpeg" })
+            onImageCapture(file)
+          })
+        setShowWebcam(false)
+      }
+    }
+  }
 
   // Função para lidar com upload de arquivo
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement> | null) => {
@@ -50,21 +70,34 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
       if (stream) {
         stream.getTracks().forEach(track => track.stop())
       }
-      
-      // Solicitar acesso à câmera
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+
+      // Verificar se o navegador suporta getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Seu navegador não suporta acesso à câmera')
+      }
+
+      // Solicitar acesso à câmera com configurações específicas
+      const constraints = {
+        video: {
           facingMode: useFrontCamera ? "user" : "environment",
           width: { ideal: 1280 },
           height: { ideal: 720 }
-        }
-      })
-      
+        },
+        audio: false
+      }
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
+
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play()
-        }
+        await new Promise((resolve) => {
+          if (videoRef.current) {
+            videoRef.current.onloadedmetadata = () => {
+              resolve(true)
+            }
+          }
+        })
+        await videoRef.current.play()
         setStream(mediaStream)
         setIsCameraActive(true)
         setCameraError(null)
@@ -72,7 +105,7 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
     } catch (err) {
       console.error("Erro ao acessar a câmera:", err)
       setCameraError("Não foi possível acessar a câmera. Verifique as permissões do navegador.")
-      
+
       // Fallback para o método tradicional se a câmera não puder ser acessada
       if (fileInputRef.current) {
         fileInputRef.current.click()
@@ -93,19 +126,19 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
       const video = videoRef.current
       const canvas = canvasRef.current
       const context = canvas.getContext('2d')
-      
+
       if (context) {
         // Definir o tamanho do canvas para corresponder ao vídeo
         canvas.width = video.videoWidth
         canvas.height = video.videoHeight
-        
+
         // Desenhar o quadro atual do vídeo no canvas
         context.drawImage(video, 0, 0, canvas.width, canvas.height)
-        
+
         // Converter para data URL
         const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9)
         setCapturedImage(imageDataUrl)
-        
+
         // Converter data URL para File
         canvas.toBlob((blob) => {
           if (blob) {
@@ -113,7 +146,7 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
             onImageCapture(file)
           }
         }, 'image/jpeg', 0.9)
-        
+
         // Parar a câmera
         stopCamera()
       }
@@ -133,7 +166,7 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
   }
 
   const handleCameraClick = () => {
-    activateCamera()
+    setShowWebcam(true)
   }
 
   const handleUploadClick = () => {
@@ -172,7 +205,7 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    const img = new Image()
+    const img = document.createElement('img')
     img.crossOrigin = "anonymous"
     img.src = capturedImage
 
@@ -361,50 +394,56 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
         </div>
       </div>
 
-      {isCameraActive ? (
-        <div className="border rounded-lg p-4 relative bg-black">
-          <div className="relative h-80 w-full">
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              className="absolute inset-0 w-full h-full object-contain rounded-lg"
-              style={{ transform: useFrontCamera ? 'scaleX(-1)' : 'none' }}
-            />
-            <canvas ref={canvasRef} className="hidden" /> {/* Canvas oculto para capturar a foto */}
-            
-            {/* Overlay de controles da câmera */}
-            <div className="absolute top-4 right-4 z-10">
-              <button 
-                onClick={toggleCamera}
-                className="bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-              >
-                <RefreshCw className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
-              <Button 
-                onClick={() => stopCamera()}
-                variant="outline"
-                className="bg-white/70 hover:bg-white/90"
-                size="lg"
-              >
-                <X className="h-5 w-5 mr-1" />
-                Cancelar
-              </Button>
-              <Button 
-                onClick={capturePhoto}
-                className="bg-primary/90 hover:bg-primary"
-                size="lg"
-              >
-                <Camera className="h-5 w-5 mr-1" />
-                Capturar
-              </Button>
+      <Dialog open={showWebcam} onOpenChange={setShowWebcam}>
+        <DialogContent className="sm:max-w-[800px] p-0">
+          <div className="bg-black rounded-lg">
+            <div className="relative h-[500px] w-full">
+              <Webcam
+                ref={webcamRef}
+                audio={false}
+                screenshotFormat="image/jpeg"
+                className="absolute inset-0 w-full h-full object-contain rounded-lg"
+                videoConstraints={{
+                  facingMode: useFrontCamera ? "user" : "environment",
+                  width: { ideal: 1280 },
+                  height: { ideal: 720 }
+                }}
+              />
+
+              <div className="absolute top-4 right-4 z-10">
+                <button 
+                  onClick={() => setUseFrontCamera(!useFrontCamera)}
+                  className="bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                >
+                  <RefreshCw className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
+                <Button 
+                  onClick={() => setShowWebcam(false)}
+                  variant="outline"
+                  className="bg-white/70 hover:bg-white/90"
+                  size="lg"
+                >
+                  <X className="h-5 w-5 mr-1" />
+                  Cancelar
+                </Button>
+                <Button 
+                  onClick={handleCapture}
+                  className="bg-primary/90 hover:bg-primary"
+                  size="lg"
+                >
+                  <Camera className="h-5 w-5 mr-1" />
+                  Capturar
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      ) : capturedImage ? (
+        </DialogContent>
+      </Dialog>
+      
+      { capturedImage ? (
         <div className="border rounded-lg p-4 relative">
           {isAnalyzing ? (
             <div className="relative h-64 w-full">
@@ -458,7 +497,7 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
               Enviar foto
             </Button>
           </div>
-          
+
           {cameraError && (
             <div className="text-red-500 text-center text-sm mt-2">
               {cameraError}

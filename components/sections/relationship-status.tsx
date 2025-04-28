@@ -12,9 +12,11 @@ interface RelationshipStatusProps {
 
 export default function RelationshipStatus({ selectedStatus, onSelect, onNext, onPrev }: RelationshipStatusProps) {
   const statuses = [
-    { id: "solteiro", label: "Solteira(o)" },
-    { id: "casado", label: "Casada(o)" },
-    { id: "enrolado", label: "Enrolado(o)" },
+    { id: "solteiro", label: "Solteiro(a)", emoji: "🌟" },
+    { id: "namorando", label: "Namorando", emoji: "💑" },
+    { id: "casado", label: "Casado(a)", emoji: "💍" },
+    { id: "divorciado", label: "Divorciado(a)", emoji: "💔" },
+    { id: "viuvo", label: "Viúvo(a)", emoji: "🕊️" },
   ]
 
   const handleNext = () => {
@@ -45,7 +47,7 @@ export default function RelationshipStatus({ selectedStatus, onSelect, onNext, o
             onClick={() => onSelect(status.id)}
           >
             <div className="flex items-center justify-between">
-              <span>{status.label}</span>
+              <span>{status.emoji} {status.label}</span>
               {selectedStatus === status.id && <div className="h-4 w-4 rounded-full bg-primary"></div>}
             </div>
           </div>
