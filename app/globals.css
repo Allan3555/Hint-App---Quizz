@@ -66,12 +66,18 @@
 }
 
 .quiz-container {
-  max-width: 600px;
-  width: 100%;
-  margin: 0 auto;
   padding: 1rem;
   position: relative;
   overflow: hidden;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .quiz-container {
+    min-height: auto;
+  }
 }
 
 .quiz-container::before {

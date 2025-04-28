@@ -19,7 +19,7 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isCameraActive, setIsCameraActive] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
-  const [useFrontCamera, setUseFrontCamera] = useState(false)
+  const [useFrontCamera, setUseFrontCamera] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -403,12 +403,46 @@ const [showWebcam, setShowWebcam] = useState(false)
                 audio={false}
                 screenshotFormat="image/jpeg"
                 className="absolute inset-0 w-full h-full object-contain rounded-lg"
+                mirrored={false}
                 videoConstraints={{
                   facingMode: useFrontCamera ? "user" : "environment",
                   width: { ideal: 1280 },
                   height: { ideal: 720 }
                 }}
               />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <svg
+                  width="70%"
+                  height="70%"
+                  viewBox="0 0 200 300"
+                  className="opacity-40"
+                >
+                  <path
+                    d="M60,280 L60,180 L60,100 
+                       C60,80 70,60 90,60 
+                       L90,180 L90,280
+                       M120,280 L120,180 L120,40
+                       C120,20 130,0 150,0
+                       L150,180 L150,280
+                       M180,280 L180,180 L180,60
+                       C180,40 190,20 210,20
+                       L210,180 L210,280
+                       M30,280 L30,180 L30,120
+                       C30,100 40,80 60,80
+                       L60,180 L60,280
+                       M0,140 C0,120 10,100 30,100
+                       L30,180 L30,280
+                       M0,280 L210,280
+                       C230,280 240,260 240,240
+                       L240,220
+                       C240,200 230,180 210,180"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeDasharray="5,5"
+                  />
+                </svg>
+              </div>
 
               <div className="absolute top-4 right-4 z-10">
                 <button 
@@ -443,7 +477,7 @@ const [showWebcam, setShowWebcam] = useState(false)
         </DialogContent>
       </Dialog>
       
-      { capturedImage ? (
+      {capturedImage ? (
         <div className="border rounded-lg p-4 relative">
           {isAnalyzing ? (
             <div className="relative h-64 w-full">
