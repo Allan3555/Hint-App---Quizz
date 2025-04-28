@@ -13,8 +13,8 @@ export default function Introduction({ onNext }: IntroductionProps) {
     <div className="flex flex-col items-center gap-6 py-4">
       <div className="relative w-full h-64">
         <Image
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/tela%20inicial%20quizz-jKXJJBQ5fWRcUJWgMhtCU4V95AUHm6.png"
-          alt="Palma da mão com tema romântico"
+          src="/images/hand-pt.webp"
+          alt="Palma da mão com linhas coloridas indicando aspectos da vida"
           fill
           className="object-contain"
         />

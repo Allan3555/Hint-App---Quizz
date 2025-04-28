@@ -12,7 +12,7 @@ export default function Redirect() {
         if (prev <= 1) {
           clearInterval(timer)
           // Replace with your actual sales page URL
-          window.location.href = "https://example.com/sales-page"
+          window.location.href = "http://neuroflex.site/vsl"
           return 0
         }
         return prev - 1
@@ -23,10 +23,10 @@ export default function Redirect() {
   }, [])
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6 py-8">
+    <div className="flex flex-col items-center justify-center gap-6 py-8 px-4 max-w-full overflow-hidden">
       <Loader2 className="h-12 w-12 animate-spin text-primary" />
 
-      <h2 className="text-2xl font-bold text-center">Preparando sua análise completa...</h2>
+      <h2 className="text-2xl font-bold text-center break-words">Preparando sua análise completa...</h2>
 
       <p className="text-center text-muted-foreground">Você será redirecionado em {countdown} segundos...</p>
     </div>
