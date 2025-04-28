@@ -231,7 +231,7 @@ export default function QuizContainer() {
   }
 
   return (
-    <Card className="w-full min-h-screen shadow-lg border-none mystical-bg sm:min-h-0 sm:w-[600px] sm:my-4">
+    <Card className="quiz-container shadow-lg border-none mystical-bg">
       <div className="flex justify-center mb-4">
         <h1 className="text-2xl font-bold text-primary">Quiz de Quiromancia</h1>
       </div>
