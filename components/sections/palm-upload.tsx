@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, Camera, Upload, Loader2 } from "lucide-react"
+import { ChevronLeft, Camera, Upload, Loader2, RefreshCw, X } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 
@@ -16,35 +16,128 @@ interface PalmUploadProps {
 export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploadProps) {
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [uploadMethod, setUploadMethod] = useState<"camera" | "upload" | null>(null)
+  const [isCameraActive, setIsCameraActive] = useState(false)
+  const [cameraError, setCameraError] = useState<string | null>(null)
+  const [useFrontCamera, setUseFrontCamera] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const analyzeCanvasRef = useRef<HTMLCanvasElement>(null)
   const [animationFrame, setAnimationFrame] = useState(0)
+  const [stream, setStream] = useState<MediaStream | null>(null)
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Função para lidar com upload de arquivo
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement> | null) => {
+    if (!e) return
+
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
       reader.onload = (event) => {
-        setCapturedImage(event.target?.result as string)
+        if (event.target?.result) {
+          setCapturedImage(event.target.result as string)
+        }
       }
       reader.readAsDataURL(file)
       onImageCapture(file)
     }
   }
 
-  const handleCameraClick = () => {
-    setUploadMethod("camera")
-    if (fileInputRef.current) {
-      fileInputRef.current.setAttribute("capture", "environment")
-      fileInputRef.current.click()
+  // Função para ativar a câmera
+  const activateCamera = async () => {
+    try {
+      // Parar qualquer stream anterior
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop())
+      }
+      
+      // Solicitar acesso à câmera
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { 
+          facingMode: useFrontCamera ? "user" : "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      })
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play()
+        }
+        setStream(mediaStream)
+        setIsCameraActive(true)
+        setCameraError(null)
+      }
+    } catch (err) {
+      console.error("Erro ao acessar a câmera:", err)
+      setCameraError("Não foi possível acessar a câmera. Verifique as permissões do navegador.")
+      
+      // Fallback para o método tradicional se a câmera não puder ser acessada
+      if (fileInputRef.current) {
+        fileInputRef.current.click()
+      }
     }
   }
 
+  // Alternar entre câmera frontal e traseira
+  const toggleCamera = () => {
+    setUseFrontCamera(!useFrontCamera)
+    // Reativar a câmera com a nova configuração
+    stopCamera(() => activateCamera())
+  }
+
+  // Função para capturar a foto da câmera
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current
+      const canvas = canvasRef.current
+      const context = canvas.getContext('2d')
+      
+      if (context) {
+        // Definir o tamanho do canvas para corresponder ao vídeo
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        
+        // Desenhar o quadro atual do vídeo no canvas
+        context.drawImage(video, 0, 0, canvas.width, canvas.height)
+        
+        // Converter para data URL
+        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9)
+        setCapturedImage(imageDataUrl)
+        
+        // Converter data URL para File
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], "palm-photo.jpg", { type: "image/jpeg" })
+            onImageCapture(file)
+          }
+        }, 'image/jpeg', 0.9)
+        
+        // Parar a câmera
+        stopCamera()
+      }
+    }
+  }
+
+  // Função para parar a câmera
+  const stopCamera = (callback?: () => void) => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop())
+      setStream(null)
+    }
+    setIsCameraActive(false)
+    if (callback) {
+      setTimeout(callback, 100)
+    }
+  }
+
+  const handleCameraClick = () => {
+    activateCamera()
+  }
+
   const handleUploadClick = () => {
-    setUploadMethod("upload")
     if (fileInputRef.current) {
-      fileInputRef.current.removeAttribute("capture")
       fileInputRef.current.click()
     }
   }
@@ -55,11 +148,27 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
     }
   }
 
+  // Limpar a câmera quando o componente for desmontado
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop())
+      }
+    }
+  }, [stream])
+
+  // Reativar a câmera quando useFrontCamera muda
+  useEffect(() => {
+    if (isCameraActive) {
+      activateCamera()
+    }
+  }, [useFrontCamera]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Palm analysis animation
   useEffect(() => {
-    if (!isAnalyzing || !canvasRef.current || !capturedImage) return
+    if (!isAnalyzing || !analyzeCanvasRef.current || !capturedImage) return
 
-    const canvas = canvasRef.current
+    const canvas = analyzeCanvasRef.current
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
@@ -252,11 +361,54 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
         </div>
       </div>
 
-      {capturedImage ? (
+      {isCameraActive ? (
+        <div className="border rounded-lg p-4 relative bg-black">
+          <div className="relative h-80 w-full">
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              className="absolute inset-0 w-full h-full object-contain rounded-lg"
+              style={{ transform: useFrontCamera ? 'scaleX(-1)' : 'none' }}
+            />
+            <canvas ref={canvasRef} className="hidden" /> {/* Canvas oculto para capturar a foto */}
+            
+            {/* Overlay de controles da câmera */}
+            <div className="absolute top-4 right-4 z-10">
+              <button 
+                onClick={toggleCamera}
+                className="bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+              >
+                <RefreshCw className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
+              <Button 
+                onClick={() => stopCamera()}
+                variant="outline"
+                className="bg-white/70 hover:bg-white/90"
+                size="lg"
+              >
+                <X className="h-5 w-5 mr-1" />
+                Cancelar
+              </Button>
+              <Button 
+                onClick={capturePhoto}
+                className="bg-primary/90 hover:bg-primary"
+                size="lg"
+              >
+                <Camera className="h-5 w-5 mr-1" />
+                Capturar
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : capturedImage ? (
         <div className="border rounded-lg p-4 relative">
           {isAnalyzing ? (
             <div className="relative h-64 w-full">
-              <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-contain rounded-lg" />
+              <canvas ref={analyzeCanvasRef} className="absolute inset-0 w-full h-full object-contain rounded-lg" />
               <div className="absolute bottom-4 left-0 right-0 flex justify-center">
                 <div className="bg-black/70 text-white px-4 py-2 rounded-full flex items-center">
                   <Loader2 className="animate-spin h-4 w-4 mr-2" />
@@ -277,7 +429,14 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
         </div>
       ) : (
         <>
-          <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" ref={fileInputRef} />
+          {/* Input for file upload */}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileChange(e)}
+            className="hidden"
+            ref={fileInputRef}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <Button
@@ -299,6 +458,12 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
               Enviar foto
             </Button>
           </div>
+          
+          {cameraError && (
+            <div className="text-red-500 text-center text-sm mt-2">
+              {cameraError}
+            </div>
+          )}
         </>
       )}
 
@@ -307,7 +472,6 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
           <Button
             onClick={() => {
               setCapturedImage(null)
-              setUploadMethod(null)
             }}
             variant="outline"
             className="transition-all duration-300 hover:scale-[1.02]"

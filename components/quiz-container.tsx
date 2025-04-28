@@ -52,8 +52,16 @@ export default function QuizContainer() {
 
     // If birthDate is updated, calculate zodiac sign
     if (key === "birthDate" && value) {
-      const sign = calculateZodiacSign(new Date(value))
-      setQuizData((prev) => ({ ...prev, zodiacSign: sign }))
+      try {
+        // Parse the date string (YYYY-MM-DD format)
+        const [year, month, day] = value.split("-").map(Number)
+        // Create a date object (months are 0-indexed in JavaScript)
+        const dateObj = new Date(year, month - 1, day)
+        const sign = calculateZodiacSign(dateObj)
+        setQuizData((prev) => ({ ...prev, zodiacSign: sign }))
+      } catch (error) {
+        console.error("Error calculating zodiac sign:", error)
+      }
     }
   }
 

@@ -40,21 +40,6 @@ export default function Introduction({ onNext }: IntroductionProps) {
         </div>
       </div>
 
-      <ul className="space-y-2 w-full">
-        <li className="flex items-start">
-          <span className="text-green-500 mr-2">✅</span>
-          <span>Questionário em menos de 1 minuto</span>
-        </li>
-        <li className="flex items-start">
-          <span className="text-green-500 mr-2">✅</span>
-          <span>Análise da palma da mão com resultado comprovado!</span>
-        </li>
-        <li className="flex items-start">
-          <span className="text-green-500 mr-2">✅</span>
-          <span>Seu amor obcecado por você em 4 dias ou menos!</span>
-        </li>
-      </ul>
-
       <Button
         onClick={onNext}
         className="w-full mt-4 btn-hover-effect transition-all duration-300 hover:scale-[1.02]"

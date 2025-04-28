@@ -20,13 +20,25 @@ interface BirthDateProps {
 }
 
 export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: BirthDateProps) {
-  const [date, setDate] = useState<Date | undefined>(selectedDate ? new Date(selectedDate) : undefined)
-  const [dateInput, setDateInput] = useState(selectedDate ? format(new Date(selectedDate), "dd/MM/yyyy") : "")
+  // Função auxiliar para converter string de data para objeto Date sem problemas de fuso horário
+  const parseStringToDate = (dateString: string): Date | undefined => {
+    if (!dateString) return undefined
+    
+    // Para evitar problemas de fuso horário, não use diretamente new Date(dateString)
+    const [year, month, day] = dateString.split('-').map(Number)
+    // Mês em JavaScript é 0-indexed, por isso o -1 no mês
+    return new Date(year, month - 1, day, 12, 0, 0)
+  }
+
+  const [date, setDate] = useState<Date | undefined>(parseStringToDate(selectedDate))
+  const [dateInput, setDateInput] = useState(selectedDate 
+    ? format(parseStringToDate(selectedDate) as Date, "dd/MM/yyyy") 
+    : "")
   const [error, setError] = useState("")
 
   useEffect(() => {
     if (selectedDate) {
-      setDateInput(format(new Date(selectedDate), "dd/MM/yyyy"))
+      setDateInput(format(parseStringToDate(selectedDate) as Date, "dd/MM/yyyy"))
     }
   }, [selectedDate])
 
@@ -43,7 +55,15 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
             return
           }
           setDate(parsedDate)
-          onSelect(parsedDate.toISOString().split("T")[0])
+
+          // Extract day, month, year directly from the parsed date
+          const day = parsedDate.getDate()
+          const month = parsedDate.getMonth() + 1
+          const year = parsedDate.getFullYear()
+
+          // Create date string in YYYY-MM-DD format without timezone conversion
+          const formattedDate = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`
+          onSelect(formattedDate)
         } else {
           setError("Data inválida")
         }
@@ -53,11 +73,20 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
     }
   }
 
-  const handleCalendarSelect = (date: Date | undefined) => {
-    setDate(date)
-    if (date) {
-      setDateInput(format(date, "dd/MM/yyyy"))
-      onSelect(date.toISOString().split("T")[0])
+  const handleCalendarSelect = (selectedDate: Date | undefined) => {
+    setDate(selectedDate)
+    if (selectedDate) {
+      setDateInput(format(selectedDate, "dd/MM/yyyy"))
+
+      // Extract day, month, year directly from the selected date
+      const day = selectedDate.getDate()
+      const month = selectedDate.getMonth() + 1
+      const year = selectedDate.getFullYear()
+
+      // Create date string in YYYY-MM-DD format without timezone conversion
+      const formattedDate = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`
+      onSelect(formattedDate)
+
       setError("")
     }
   }
