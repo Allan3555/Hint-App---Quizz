@@ -373,7 +373,7 @@ const [showWebcam, setShowWebcam] = useState(false)
           <div className="text-center mb-2 text-green-600 font-medium">Correto</div>
           <div className="relative h-40">
             <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-9Zaj7OuCw8BdpgCy2cH513nQurMk5h.png"
+              src="/imagens/palma-correta.png"
               alt="Exemplo correto de foto da palma"
               fill
               className="object-contain"
@@ -385,7 +385,7 @@ const [showWebcam, setShowWebcam] = useState(false)
           <div className="text-center mb-2 text-red-600 font-medium">Errado</div>
           <div className="relative h-40">
             <Image
-              src="/placeholder.svg?height=200&width=200"
+              src="/imagens/palma-errada.png"
               alt="Exemplo incorreto de foto da palma"
               fill
               className="object-contain"
