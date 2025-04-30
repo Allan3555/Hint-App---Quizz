@@ -373,7 +373,7 @@ const [showWebcam, setShowWebcam] = useState(false)
           <div className="text-center mb-2 text-green-600 font-medium">Correto</div>
           <div className="relative h-40">
             <Image
-              src="/imagens/palma-correta.png"
+              src="/images/palma-correta.png"
               alt="Exemplo correto de foto da palma"
               fill
               className="object-contain"
@@ -385,7 +385,7 @@ const [showWebcam, setShowWebcam] = useState(false)
           <div className="text-center mb-2 text-red-600 font-medium">Errado</div>
           <div className="relative h-40">
             <Image
-              src="/imagens/palma-errada.png"
+              src="/images/palma-errada.png"
               alt="Exemplo incorreto de foto da palma"
               fill
               className="object-contain"
