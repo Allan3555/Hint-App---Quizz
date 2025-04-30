@@ -62,8 +62,9 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
             return
           }
 
-          if (age < 16) {
-            setError("Você precisa ter pelo menos 16 anos")
+          // Alterado de 16 para 15 conforme solicitado
+          if (age < 15) {
+            setError("Você precisa ter pelo menos 15 anos para continuar")
             return
           }
 
@@ -90,6 +91,20 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
     setDate(selectedDate)
     if (selectedDate) {
       setDateInput(format(selectedDate, "dd/MM/yyyy"))
+
+      // Verificação de idade ao selecionar no calendário
+      const today = new Date()
+      const age = today.getFullYear() - selectedDate.getFullYear()
+      const m = today.getMonth() - selectedDate.getMonth()
+      if (m < 0 || (m === 0 && today.getDate() < selectedDate.getDate())) {
+        age--
+      }
+
+      // Alterado de 16 para 15 conforme solicitado
+      if (age < 15) {
+        setError("Você precisa ter pelo menos 15 anos para continuar")
+        return
+      }
 
       // Extract day, month, year directly from the selected date
       const day = selectedDate.getDate()
@@ -191,14 +206,18 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
               </PopoverContent>
             </Popover>
           </div>
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          {error && (
+            <p className="text-red-500 text-sm mt-1 flex items-center">
+              <span className="font-medium">{error}</span>
+            </p>
+          )}
         </div>
       </div>
 
       <Button
         onClick={handleNext}
         className="w-full mt-4 transition-all duration-300 hover:scale-[1.02]"
-        disabled={!selectedDate}
+        disabled={!selectedDate || error !== ""}
       >
         Continuar
       </Button>
