@@ -19,15 +19,15 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isCameraActive, setIsCameraActive] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
-  const [useFrontCamera, setUseFrontCamera] = useState(true)
+  const [useFrontCamera, setUseFrontCamera] = useState(false) // Default to back camera
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const analyzeCanvasRef = useRef<HTMLCanvasElement>(null)
   const [animationFrame, setAnimationFrame] = useState(0)
   const [stream, setStream] = useState<MediaStream | null>(null)
-const webcamRef = useRef<Webcam>(null)
-const [showWebcam, setShowWebcam] = useState(false)
+  const webcamRef = useRef<Webcam>(null)
+  const [showWebcam, setShowWebcam] = useState(false)
 
   const handleCapture = () => {
     if (webcamRef.current) {
@@ -36,8 +36,8 @@ const [showWebcam, setShowWebcam] = useState(false)
         setCapturedImage(imageSrc)
         // Converter base64 para File
         fetch(imageSrc)
-          .then(res => res.blob())
-          .then(blob => {
+          .then((res) => res.blob())
+          .then((blob) => {
             const file = new File([blob], "palm-photo.jpg", { type: "image/jpeg" })
             onImageCapture(file)
           })
@@ -63,108 +63,6 @@ const [showWebcam, setShowWebcam] = useState(false)
     }
   }
 
-  // Função para ativar a câmera
-  const activateCamera = async () => {
-    try {
-      // Parar qualquer stream anterior
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop())
-      }
-
-      // Verificar se o navegador suporta getUserMedia
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Seu navegador não suporta acesso à câmera')
-      }
-
-      // Solicitar acesso à câmera com configurações específicas
-      const constraints = {
-        video: {
-          facingMode: useFrontCamera ? "user" : "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      }
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream
-        await new Promise((resolve) => {
-          if (videoRef.current) {
-            videoRef.current.onloadedmetadata = () => {
-              resolve(true)
-            }
-          }
-        })
-        await videoRef.current.play()
-        setStream(mediaStream)
-        setIsCameraActive(true)
-        setCameraError(null)
-      }
-    } catch (err) {
-      console.error("Erro ao acessar a câmera:", err)
-      setCameraError("Não foi possível acessar a câmera. Verifique as permissões do navegador.")
-
-      // Fallback para o método tradicional se a câmera não puder ser acessada
-      if (fileInputRef.current) {
-        fileInputRef.current.click()
-      }
-    }
-  }
-
-  // Alternar entre câmera frontal e traseira
-  const toggleCamera = () => {
-    setUseFrontCamera(!useFrontCamera)
-    // Reativar a câmera com a nova configuração
-    stopCamera(() => activateCamera())
-  }
-
-  // Função para capturar a foto da câmera
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current
-      const canvas = canvasRef.current
-      const context = canvas.getContext('2d')
-
-      if (context) {
-        // Definir o tamanho do canvas para corresponder ao vídeo
-        canvas.width = video.videoWidth
-        canvas.height = video.videoHeight
-
-        // Desenhar o quadro atual do vídeo no canvas
-        context.drawImage(video, 0, 0, canvas.width, canvas.height)
-
-        // Converter para data URL
-        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9)
-        setCapturedImage(imageDataUrl)
-
-        // Converter data URL para File
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const file = new File([blob], "palm-photo.jpg", { type: "image/jpeg" })
-            onImageCapture(file)
-          }
-        }, 'image/jpeg', 0.9)
-
-        // Parar a câmera
-        stopCamera()
-      }
-    }
-  }
-
-  // Função para parar a câmera
-  const stopCamera = (callback?: () => void) => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop())
-      setStream(null)
-    }
-    setIsCameraActive(false)
-    if (callback) {
-      setTimeout(callback, 100)
-    }
-  }
-
   const handleCameraClick = () => {
     setShowWebcam(true)
   }
@@ -181,22 +79,6 @@ const [showWebcam, setShowWebcam] = useState(false)
     }
   }
 
-  // Limpar a câmera quando o componente for desmontado
-  useEffect(() => {
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop())
-      }
-    }
-  }, [stream])
-
-  // Reativar a câmera quando useFrontCamera muda
-  useEffect(() => {
-    if (isCameraActive) {
-      activateCamera()
-    }
-  }, [useFrontCamera]) // eslint-disable-line react-hooks/exhaustive-deps
-
   // Palm analysis animation
   useEffect(() => {
     if (!isAnalyzing || !analyzeCanvasRef.current || !capturedImage) return
@@ -205,7 +87,7 @@ const [showWebcam, setShowWebcam] = useState(false)
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    const img = document.createElement('img')
+    const img = document.createElement("img")
     img.crossOrigin = "anonymous"
     img.src = capturedImage
 
@@ -373,7 +255,7 @@ const [showWebcam, setShowWebcam] = useState(false)
           <div className="text-center mb-2 text-green-600 font-medium">Correto</div>
           <div className="relative h-40">
             <Image
-              src="/images/palma-correta.png"
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-9Zaj7OuCw8BdpgCy2cH513nQurMk5h.png"
               alt="Exemplo correto de foto da palma"
               fill
               className="object-contain"
@@ -385,7 +267,7 @@ const [showWebcam, setShowWebcam] = useState(false)
           <div className="text-center mb-2 text-red-600 font-medium">Errado</div>
           <div className="relative h-40">
             <Image
-              src="/images/palma-errada.png"
+              src="/placeholder.svg?height=200&width=200"
               alt="Exemplo incorreto de foto da palma"
               fill
               className="object-contain"
@@ -407,45 +289,23 @@ const [showWebcam, setShowWebcam] = useState(false)
                 videoConstraints={{
                   facingMode: useFrontCamera ? "user" : "environment",
                   width: { ideal: 1280 },
-                  height: { ideal: 720 }
+                  height: { ideal: 720 },
                 }}
               />
+
+              {/* Palm overlay guide image */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <svg
-                  width="70%"
-                  height="70%"
-                  viewBox="0 0 200 300"
-                  className="opacity-40"
-                >
-                  <path
-                    d="M60,280 L60,180 L60,100 
-                       C60,80 70,60 90,60 
-                       L90,180 L90,280
-                       M120,280 L120,180 L120,40
-                       C120,20 130,0 150,0
-                       L150,180 L150,280
-                       M180,280 L180,180 L180,60
-                       C180,40 190,20 210,20
-                       L210,180 L210,280
-                       M30,280 L30,180 L30,120
-                       C30,100 40,80 60,80
-                       L60,180 L60,280
-                       M0,140 C0,120 10,100 30,100
-                       L30,180 L30,280
-                       M0,280 L210,280
-                       C230,280 240,260 240,240
-                       L240,220
-                       C240,200 230,180 210,180"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeDasharray="5,5"
-                  />
-                </svg>
+                <Image
+                  src="/images/palm-center.png"
+                  alt="Palm position guide"
+                  width={400}
+                  height={400}
+                  className="opacity-60 object-contain"
+                />
               </div>
 
               <div className="absolute top-4 right-4 z-10">
-                <button 
+                <button
                   onClick={() => setUseFrontCamera(!useFrontCamera)}
                   className="bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
                 >
@@ -454,7 +314,7 @@ const [showWebcam, setShowWebcam] = useState(false)
               </div>
 
               <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
-                <Button 
+                <Button
                   onClick={() => setShowWebcam(false)}
                   variant="outline"
                   className="bg-white/70 hover:bg-white/90"
@@ -463,11 +323,7 @@ const [showWebcam, setShowWebcam] = useState(false)
                   <X className="h-5 w-5 mr-1" />
                   Cancelar
                 </Button>
-                <Button 
-                  onClick={handleCapture}
-                  className="bg-primary/90 hover:bg-primary"
-                  size="lg"
-                >
+                <Button onClick={handleCapture} className="bg-primary/90 hover:bg-primary" size="lg">
                   <Camera className="h-5 w-5 mr-1" />
                   Capturar
                 </Button>
@@ -476,7 +332,7 @@ const [showWebcam, setShowWebcam] = useState(false)
           </div>
         </DialogContent>
       </Dialog>
-      
+
       {capturedImage ? (
         <div className="border rounded-lg p-4 relative">
           {isAnalyzing ? (
@@ -532,11 +388,7 @@ const [showWebcam, setShowWebcam] = useState(false)
             </Button>
           </div>
 
-          {cameraError && (
-            <div className="text-red-500 text-center text-sm mt-2">
-              {cameraError}
-            </div>
-          )}
+          {cameraError && <div className="text-red-500 text-center text-sm mt-2">{cameraError}</div>}
         </>
       )}
 

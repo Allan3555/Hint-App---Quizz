@@ -14,7 +14,6 @@ import DecisionStyle from "./sections/decision-style"
 import PersonalizedMessage from "./sections/personalized-message"
 import PalmUpload from "./sections/palm-upload"
 import Result from "./sections/result"
-import Redirect from "./sections/redirect"
 import { calculateZodiacSign } from "@/lib/utils"
 import { AnimatePresence, motion } from "framer-motion"
 
@@ -101,17 +100,12 @@ export default function QuizContainer() {
         body: formData,
       })
 
-      if (response.ok) {
-        nextSection() // Move to redirect section
-      } else {
-        console.error("Failed to submit data")
-        // Still move to next section for demo purposes
-        nextSection()
-      }
+      // Redirect directly to sales page after submission
+      window.location.href = "https://lplinhadodestino.vercel.app/"
     } catch (error) {
       console.error("Error submitting data:", error)
-      // Still move to next section for demo purposes
-      nextSection()
+      // Still redirect to sales page even if there's an error
+      window.location.href = "https://lplinhadodestino.vercel.app/"
     }
   }
 
@@ -223,8 +217,6 @@ export default function QuizContainer() {
         )
       case 12:
         return <Result onSubmit={submitQuizData} onPrev={prevSection} />
-      case 13:
-        return <Redirect />
       default:
         return <Introduction onNext={nextSection} />
     }
@@ -238,7 +230,7 @@ export default function QuizContainer() {
       <div className="mb-4 w-full bg-gray-200 h-2 rounded-full overflow-hidden">
         <div
           className="bg-primary h-2 rounded-full transition-all duration-500"
-          style={{ width: `${(currentSection / 13) * 100}%` }}
+          style={{ width: `${(currentSection / 12) * 100}%` }}
         ></div>
       </div>
       <AnimatePresence mode="wait" custom={direction}>

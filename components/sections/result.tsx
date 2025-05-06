@@ -257,11 +257,8 @@ export default function Result({ onSubmit, onPrev }: ResultProps) {
     e.preventDefault()
     if (email) {
       setIsSubmitting(true)
-      // Simulate API call
-      setTimeout(() => {
-        onSubmit(email)
-        setIsSubmitting(false)
-      }, 1500)
+      // Submit email and redirect directly to sales page
+      onSubmit(email)
     }
   }
 
