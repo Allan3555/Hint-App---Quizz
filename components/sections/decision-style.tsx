@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
+import { useEffect } from "react"
 
 interface DecisionStyleProps {
   selectedStyle: string
@@ -17,10 +18,19 @@ export default function DecisionStyle({ selectedStyle, onSelect, onNext, onPrev 
     { id: "ambos", label: "Ambos", emoji: "✨" },
   ]
 
-  const handleNext = () => {
+  // Efeito para avançar automaticamente quando uma opção é selecionada
+  useEffect(() => {
     if (selectedStyle) {
-      onNext()
+      const timer = setTimeout(() => {
+        onNext()
+      }, 500) // Pequeno delay para mostrar a seleção
+      return () => clearTimeout(timer)
     }
+  }, [selectedStyle, onNext])
+
+  const handleSelect = (style: string) => {
+    onSelect(style)
+    // O avanço automático será feito pelo useEffect
   }
 
   return (
@@ -42,7 +52,7 @@ export default function DecisionStyle({ selectedStyle, onSelect, onNext, onPrev 
           <div
             key={style.id}
             className={`option-card ${selectedStyle === style.id ? "selected" : ""}`}
-            onClick={() => onSelect(style.id)}
+            onClick={() => handleSelect(style.id)}
           >
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2">
@@ -55,7 +65,7 @@ export default function DecisionStyle({ selectedStyle, onSelect, onNext, onPrev 
         ))}
       </div>
 
-      <Button onClick={handleNext} className="w-full mt-4" disabled={!selectedStyle}>
+      <Button onClick={onNext} className="w-full mt-4" disabled={!selectedStyle}>
         Continuar
       </Button>
     </div>

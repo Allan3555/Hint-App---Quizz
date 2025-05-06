@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
+import { useEffect } from "react"
 
 interface GenderSelectionProps {
   selectedGender: string
@@ -17,10 +18,19 @@ export default function GenderSelection({ selectedGender, onSelect, onNext, onPr
     { id: "outros", label: "Outros" },
   ]
 
-  const handleNext = () => {
+  // Efeito para avançar automaticamente quando uma opção é selecionada
+  useEffect(() => {
     if (selectedGender) {
-      onNext()
+      const timer = setTimeout(() => {
+        onNext()
+      }, 500) // Pequeno delay para mostrar a seleção
+      return () => clearTimeout(timer)
     }
+  }, [selectedGender, onNext])
+
+  const handleSelect = (gender: string) => {
+    onSelect(gender)
+    // O avanço automático será feito pelo useEffect
   }
 
   return (
@@ -36,7 +46,7 @@ export default function GenderSelection({ selectedGender, onSelect, onNext, onPr
       <h2 className="text-xl font-bold text-center">Qual é o seu gênero?</h2>
 
       <p className="text-center text-muted-foreground">
-        Na Quiromancia no foco amoroso, é necessário saber o gênero para ter êxito na conquista desejada.
+        Na Quiromancia com foco amoroso, é necessário saber o gênero para ter êxito na conquista desejada.
       </p>
 
       <div className="grid gap-4 mt-2">
@@ -44,7 +54,7 @@ export default function GenderSelection({ selectedGender, onSelect, onNext, onPr
           <div
             key={gender.id}
             className={`option-card ${selectedGender === gender.id ? "selected" : ""}`}
-            onClick={() => onSelect(gender.id)}
+            onClick={() => handleSelect(gender.id)}
           >
             <div className="flex items-center justify-between">
               <span>{gender.label}</span>
@@ -54,7 +64,7 @@ export default function GenderSelection({ selectedGender, onSelect, onNext, onPr
         ))}
       </div>
 
-      <Button onClick={handleNext} className="w-full mt-4" disabled={!selectedGender}>
+      <Button onClick={onNext} className="w-full mt-4" disabled={!selectedGender}>
         Continuar
       </Button>
     </div>

@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
+import { useEffect } from "react"
 
 interface ColorSelectionProps {
   selectedColor: string
@@ -20,10 +21,19 @@ export default function ColorSelection({ selectedColor, onSelect, onNext, onPrev
     { id: "Roxo", label: "Roxo", hex: "#8A2BE2" },
   ]
 
-  const handleNext = () => {
+  // Efeito para avançar automaticamente quando uma opção é selecionada
+  useEffect(() => {
     if (selectedColor) {
-      onNext()
+      const timer = setTimeout(() => {
+        onNext()
+      }, 500) // Pequeno delay para mostrar a seleção
+      return () => clearTimeout(timer)
     }
+  }, [selectedColor, onNext])
+
+  const handleSelect = (color: string) => {
+    onSelect(color)
+    // O avanço automático será feito pelo useEffect
   }
 
   return (
@@ -43,7 +53,7 @@ export default function ColorSelection({ selectedColor, onSelect, onNext, onPrev
           <div
             key={color.id}
             className={`option-card ${selectedColor === color.id ? "selected" : ""}`}
-            onClick={() => onSelect(color.id)}
+            onClick={() => handleSelect(color.id)}
           >
             <div className="flex items-center gap-3">
               <div className="w-6 h-6 rounded-full" style={{ backgroundColor: color.hex }}></div>
@@ -53,7 +63,7 @@ export default function ColorSelection({ selectedColor, onSelect, onNext, onPrev
         ))}
       </div>
 
-      <Button onClick={handleNext} className="w-full mt-4" disabled={!selectedColor}>
+      <Button onClick={onNext} className="w-full mt-4" disabled={!selectedColor}>
         Continuar
       </Button>
     </div>

@@ -255,7 +255,7 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
           <div className="text-center mb-2 text-green-600 font-medium">Correto</div>
           <div className="relative h-40">
             <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-9Zaj7OuCw8BdpgCy2cH513nQurMk5h.png"
+              src="/images/palma-correta.png"
               alt="Exemplo correto de foto da palma"
               fill
               className="object-contain"
@@ -267,7 +267,7 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
           <div className="text-center mb-2 text-red-600 font-medium">Errado</div>
           <div className="relative h-40">
             <Image
-              src="/placeholder.svg?height=200&width=200"
+              src="/images/palma-errada.png"
               alt="Exemplo incorreto de foto da palma"
               fill
               className="object-contain"
@@ -298,9 +298,9 @@ export default function PalmUpload({ onImageCapture, onNext, onPrev }: PalmUploa
                 <Image
                   src="/images/palm-center.png"
                   alt="Palm position guide"
-                  width={400}
-                  height={400}
-                  className="opacity-60 object-contain"
+                  width={300}
+                  height={300}
+                  className="opacity-80 object-contain"
                 />
               </div>
 

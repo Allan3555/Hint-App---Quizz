@@ -1,15 +1,19 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-
-const inter = Inter({ subsets: ["latin"] })
+import ClientLayout from "./ClientLayout"
 
 export const metadata: Metadata = {
-  title: "Quiz de Quiromancia",
-  description: "Descubra os segredos do amor através da quiromancia",
-    generator: 'v0.dev'
+  title: "Quiz de Quiromancia - Descubra os Segredos do Amor",
+  description:
+    "Descubra os segredos do amor através da quiromancia. Faça nosso quiz rápido e receba uma análise personalizada da sua palma da mão.",
+  keywords: "quiromancia, amor, relacionamento, palma da mão, destino, astrologia",
+  generator: "v0.dev",
+  openGraph: {
+    title: "Quiz de Quiromancia - Descubra os Segredos do Amor",
+    description:
+      "Descubra os segredos do amor através da quiromancia. Faça nosso quiz rápido e receba uma análise personalizada.",
+    images: ["/images/palm-center.png"],
+  },
 }
 
 export default function RootLayout({
@@ -17,16 +21,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return (
-    <html lang="pt-BR">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-      </head>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <main className="min-h-screen flex flex-col items-center justify-center">{children}</main>
-        </ThemeProvider>
-      </body>
-    </html>
-  )
+  return <ClientLayout>{children}</ClientLayout>
 }
+
+
+import './globals.css'

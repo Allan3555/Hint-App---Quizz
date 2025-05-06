@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
+import { useEffect } from "react"
 
 interface ElementSelectionProps {
   selectedElement: string
@@ -18,10 +19,19 @@ export default function ElementSelection({ selectedElement, onSelect, onNext, on
     { id: "agua", label: "Água" },
   ]
 
-  const handleNext = () => {
+  // Efeito para avançar automaticamente quando uma opção é selecionada
+  useEffect(() => {
     if (selectedElement) {
-      onNext()
+      const timer = setTimeout(() => {
+        onNext()
+      }, 500) // Pequeno delay para mostrar a seleção
+      return () => clearTimeout(timer)
     }
+  }, [selectedElement, onNext])
+
+  const handleSelect = (element: string) => {
+    onSelect(element)
+    // O avanço automático será feito pelo useEffect
   }
 
   return (
@@ -41,7 +51,7 @@ export default function ElementSelection({ selectedElement, onSelect, onNext, on
           <div
             key={element.id}
             className={`option-card ${selectedElement === element.id ? "selected" : ""}`}
-            onClick={() => onSelect(element.id)}
+            onClick={() => handleSelect(element.id)}
           >
             <div className="flex flex-col items-center justify-center p-2">
               <span className="text-3xl mb-2">
@@ -56,7 +66,7 @@ export default function ElementSelection({ selectedElement, onSelect, onNext, on
         ))}
       </div>
 
-      <Button onClick={handleNext} className="w-full mt-4" disabled={!selectedElement}>
+      <Button onClick={onNext} className="w-full mt-4" disabled={!selectedElement}>
         Continuar
       </Button>
     </div>

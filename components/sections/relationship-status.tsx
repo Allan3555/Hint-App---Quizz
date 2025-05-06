@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
+import { useEffect } from "react"
 
 interface RelationshipStatusProps {
   selectedStatus: string
@@ -19,10 +20,19 @@ export default function RelationshipStatus({ selectedStatus, onSelect, onNext, o
     { id: "viuvo", label: "Viúvo(a)", emoji: "🕊️" },
   ]
 
-  const handleNext = () => {
+  // Efeito para avançar automaticamente quando uma opção é selecionada
+  useEffect(() => {
     if (selectedStatus) {
-      onNext()
+      const timer = setTimeout(() => {
+        onNext()
+      }, 500) // Pequeno delay para mostrar a seleção
+      return () => clearTimeout(timer)
     }
+  }, [selectedStatus, onNext])
+
+  const handleSelect = (status: string) => {
+    onSelect(status)
+    // O avanço automático será feito pelo useEffect
   }
 
   return (
@@ -36,7 +46,7 @@ export default function RelationshipStatus({ selectedStatus, onSelect, onNext, o
       </button>
 
       <h2 className="text-xl font-bold text-center">
-        Para as divindades de conhecerem melhor, nos fale seu status de relacionamento atual:
+        Para as divindades te conhecerem melhor, nos fale seu status de relacionamento atual:
       </h2>
 
       <div className="grid gap-4 mt-2">
@@ -44,17 +54,19 @@ export default function RelationshipStatus({ selectedStatus, onSelect, onNext, o
           <div
             key={status.id}
             className={`option-card ${selectedStatus === status.id ? "selected" : ""}`}
-            onClick={() => onSelect(status.id)}
+            onClick={() => handleSelect(status.id)}
           >
             <div className="flex items-center justify-between">
-              <span>{status.emoji} {status.label}</span>
+              <span>
+                {status.emoji} {status.label}
+              </span>
               {selectedStatus === status.id && <div className="h-4 w-4 rounded-full bg-primary"></div>}
             </div>
           </div>
         ))}
       </div>
 
-      <Button onClick={handleNext} className="w-full mt-4" disabled={!selectedStatus}>
+      <Button onClick={onNext} className="w-full mt-4" disabled={!selectedStatus}>
         Continuar
       </Button>
     </div>
