@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 
 interface RelationshipStatusProps {
   selectedStatus: string
@@ -20,19 +20,26 @@ export default function RelationshipStatus({ selectedStatus, onSelect, onNext, o
     { id: "viuvo", label: "Viúvo(a)", emoji: "🕊️" },
   ]
 
-  // Efeito para avançar automaticamente quando uma opção é selecionada
+  // Estado para rastrear se uma nova seleção foi feita nesta renderização
+  const [newSelection, setNewSelection] = useState(false)
+
+  // Efeito para avançar automaticamente apenas quando uma nova seleção é feita
   useEffect(() => {
-    if (selectedStatus) {
+    if (newSelection && selectedStatus) {
       const timer = setTimeout(() => {
         onNext()
-      }, 500) // Pequeno delay para mostrar a seleção
+        setNewSelection(false) // Resetar após avançar
+      }, 500)
       return () => clearTimeout(timer)
     }
-  }, [selectedStatus, onNext])
+  }, [newSelection, selectedStatus, onNext])
 
   const handleSelect = (status: string) => {
-    onSelect(status)
-    // O avanço automático será feito pelo useEffect
+    // Só considerar como nova seleção se for diferente da atual
+    if (status !== selectedStatus) {
+      onSelect(status)
+      setNewSelection(true) // Marcar que uma nova seleção foi feita
+    }
   }
 
   return (

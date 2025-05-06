@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 
 interface ElementSelectionProps {
   selectedElement: string
@@ -19,19 +19,26 @@ export default function ElementSelection({ selectedElement, onSelect, onNext, on
     { id: "agua", label: "Água" },
   ]
 
-  // Efeito para avançar automaticamente quando uma opção é selecionada
+  // Estado para rastrear se uma nova seleção foi feita nesta renderização
+  const [newSelection, setNewSelection] = useState(false)
+
+  // Efeito para avançar automaticamente apenas quando uma nova seleção é feita
   useEffect(() => {
-    if (selectedElement) {
+    if (newSelection && selectedElement) {
       const timer = setTimeout(() => {
         onNext()
-      }, 500) // Pequeno delay para mostrar a seleção
+        setNewSelection(false) // Resetar após avançar
+      }, 500)
       return () => clearTimeout(timer)
     }
-  }, [selectedElement, onNext])
+  }, [newSelection, selectedElement, onNext])
 
   const handleSelect = (element: string) => {
-    onSelect(element)
-    // O avanço automático será feito pelo useEffect
+    // Só considerar como nova seleção se for diferente da atual
+    if (element !== selectedElement) {
+      onSelect(element)
+      setNewSelection(true) // Marcar que uma nova seleção foi feita
+    }
   }
 
   return (

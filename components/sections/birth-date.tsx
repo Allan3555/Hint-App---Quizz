@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, isValid, parse } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface BirthDateProps {
   selectedDate: string
@@ -24,17 +23,17 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
   // Função auxiliar para converter string de data para objeto Date sem problemas de fuso horário
   const parseStringToDate = (dateString: string): Date | undefined => {
     if (!dateString) return undefined
-
+    
     // Para evitar problemas de fuso horário, não use diretamente new Date(dateString)
-    const [year, month, day] = dateString.split("-").map(Number)
+    const [year, month, day] = dateString.split('-').map(Number)
     // Mês em JavaScript é 0-indexed, por isso o -1 no mês
     return new Date(year, month - 1, day, 12, 0, 0)
   }
 
   const [date, setDate] = useState<Date | undefined>(parseStringToDate(selectedDate))
-  const [dateInput, setDateInput] = useState(
-    selectedDate ? format(parseStringToDate(selectedDate) as Date, "dd/MM/yyyy") : "",
-  )
+  const [dateInput, setDateInput] = useState(selectedDate 
+    ? format(parseStringToDate(selectedDate) as Date, "dd/MM/yyyy") 
+    : "")
   const [error, setError] = useState("")
 
   useEffect(() => {
@@ -52,7 +51,7 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
         const parsedDate = parse(value, "dd/MM/yyyy", new Date())
         if (isValid(parsedDate)) {
           const today = new Date()
-          let age = today.getFullYear() - parsedDate.getFullYear()
+          const age = today.getFullYear() - parsedDate.getFullYear()
           const m = today.getMonth() - parsedDate.getMonth()
           if (m < 0 || (m === 0 && today.getDate() < parsedDate.getDate())) {
             age--
@@ -95,7 +94,7 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
 
       // Verificação de idade ao selecionar no calendário
       const today = new Date()
-      let age = today.getFullYear() - selectedDate.getFullYear()
+      const age = today.getFullYear() - selectedDate.getFullYear()
       const m = today.getMonth() - selectedDate.getMonth()
       if (m < 0 || (m === 0 && today.getDate() < selectedDate.getDate())) {
         age--
@@ -196,79 +195,14 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="end">
-                <div className="flex flex-col space-y-4 p-2">
-                  {/* Seletores de ano e mês */}
-                  <div className="flex justify-between items-center px-1">
-                    <Select
-                      value={date ? date.getFullYear().toString() : new Date().getFullYear().toString()}
-                      onValueChange={(year) => {
-                        if (date) {
-                          const newDate = new Date(date)
-                          newDate.setFullYear(Number.parseInt(year))
-                          handleCalendarSelect(newDate)
-                        } else {
-                          const newDate = new Date()
-                          newDate.setFullYear(Number.parseInt(year))
-                          handleCalendarSelect(newDate)
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="w-[110px] h-8">
-                        <SelectValue placeholder="Ano" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {Array.from({ length: 84 }, (_, i) => new Date().getFullYear() - i).map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <Select
-                      value={date ? (date.getMonth() + 1).toString() : (new Date().getMonth() + 1).toString()}
-                      onValueChange={(month) => {
-                        if (date) {
-                          const newDate = new Date(date)
-                          newDate.setMonth(Number.parseInt(month) - 1)
-                          handleCalendarSelect(newDate)
-                        } else {
-                          const newDate = new Date()
-                          newDate.setMonth(Number.parseInt(month) - 1)
-                          handleCalendarSelect(newDate)
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="w-[110px] h-8">
-                        <SelectValue placeholder="Mês" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Janeiro</SelectItem>
-                        <SelectItem value="2">Fevereiro</SelectItem>
-                        <SelectItem value="3">Março</SelectItem>
-                        <SelectItem value="4">Abril</SelectItem>
-                        <SelectItem value="5">Maio</SelectItem>
-                        <SelectItem value="6">Junho</SelectItem>
-                        <SelectItem value="7">Julho</SelectItem>
-                        <SelectItem value="8">Agosto</SelectItem>
-                        <SelectItem value="9">Setembro</SelectItem>
-                        <SelectItem value="10">Outubro</SelectItem>
-                        <SelectItem value="11">Novembro</SelectItem>
-                        <SelectItem value="12">Dezembro</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Calendário padrão */}
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={handleCalendarSelect}
-                    disabled={{ after: new Date() }}
-                    locale={ptBR}
-                    initialFocus
-                  />
-                </div>
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={handleCalendarSelect}
+                  disabled={{ after: new Date() }}
+                  locale={ptBR}
+                  initialFocus
+                />
               </PopoverContent>
             </Popover>
           </div>

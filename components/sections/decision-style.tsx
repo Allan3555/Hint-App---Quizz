@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 
 interface DecisionStyleProps {
   selectedStyle: string
@@ -18,19 +18,26 @@ export default function DecisionStyle({ selectedStyle, onSelect, onNext, onPrev 
     { id: "ambos", label: "Ambos", emoji: "✨" },
   ]
 
-  // Efeito para avançar automaticamente quando uma opção é selecionada
+  // Estado para rastrear se uma nova seleção foi feita nesta renderização
+  const [newSelection, setNewSelection] = useState(false)
+
+  // Efeito para avançar automaticamente apenas quando uma nova seleção é feita
   useEffect(() => {
-    if (selectedStyle) {
+    if (newSelection && selectedStyle) {
       const timer = setTimeout(() => {
         onNext()
-      }, 500) // Pequeno delay para mostrar a seleção
+        setNewSelection(false) // Resetar após avançar
+      }, 500)
       return () => clearTimeout(timer)
     }
-  }, [selectedStyle, onNext])
+  }, [newSelection, selectedStyle, onNext])
 
   const handleSelect = (style: string) => {
-    onSelect(style)
-    // O avanço automático será feito pelo useEffect
+    // Só considerar como nova seleção se for diferente da atual
+    if (style !== selectedStyle) {
+      onSelect(style)
+      setNewSelection(true) // Marcar que uma nova seleção foi feita
+    }
   }
 
   return (

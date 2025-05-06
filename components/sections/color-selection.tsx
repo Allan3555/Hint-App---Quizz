@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 
 interface ColorSelectionProps {
   selectedColor: string
@@ -21,19 +21,26 @@ export default function ColorSelection({ selectedColor, onSelect, onNext, onPrev
     { id: "Roxo", label: "Roxo", hex: "#8A2BE2" },
   ]
 
-  // Efeito para avançar automaticamente quando uma opção é selecionada
+  // Estado para rastrear se uma nova seleção foi feita nesta renderização
+  const [newSelection, setNewSelection] = useState(false)
+
+  // Efeito para avançar automaticamente apenas quando uma nova seleção é feita
   useEffect(() => {
-    if (selectedColor) {
+    if (newSelection && selectedColor) {
       const timer = setTimeout(() => {
         onNext()
-      }, 500) // Pequeno delay para mostrar a seleção
+        setNewSelection(false) // Resetar após avançar
+      }, 500)
       return () => clearTimeout(timer)
     }
-  }, [selectedColor, onNext])
+  }, [newSelection, selectedColor, onNext])
 
   const handleSelect = (color: string) => {
-    onSelect(color)
-    // O avanço automático será feito pelo useEffect
+    // Só considerar como nova seleção se for diferente da atual
+    if (color !== selectedColor) {
+      onSelect(color)
+      setNewSelection(true) // Marcar que uma nova seleção foi feita
+    }
   }
 
   return (

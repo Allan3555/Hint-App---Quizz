@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 
 interface LoveAspectProps {
   selectedAspect: string
@@ -18,20 +18,26 @@ export default function LoveAspect({ selectedAspect, onSelect, onNext, onPrev }:
     { id: "carreira", label: "Carreira e Destino", available: false, emoji: "💼" },
   ]
 
-  // Efeito para avançar automaticamente quando uma opção é selecionada
+  // Estado para rastrear se uma nova seleção foi feita nesta renderização
+  const [newSelection, setNewSelection] = useState(false)
+
+  // Efeito para avançar automaticamente apenas quando uma nova seleção é feita
   useEffect(() => {
-    if (selectedAspect) {
+    if (newSelection && selectedAspect) {
       const timer = setTimeout(() => {
         onNext()
-      }, 500) // Pequeno delay para mostrar a seleção
+        setNewSelection(false) // Resetar após avançar
+      }, 500)
       return () => clearTimeout(timer)
     }
-  }, [selectedAspect, onNext])
+  }, [newSelection, selectedAspect, onNext])
 
   const handleSelect = (aspect: string) => {
-    if (aspects.find((a) => a.id === aspect)?.available) {
+    const aspectItem = aspects.find((a) => a.id === aspect)
+    // Só considerar como nova seleção se for diferente da atual e estiver disponível
+    if (aspectItem?.available && aspect !== selectedAspect) {
       onSelect(aspect)
-      // O avanço automático será feito pelo useEffect
+      setNewSelection(true) // Marcar que uma nova seleção foi feita
     }
   }
 

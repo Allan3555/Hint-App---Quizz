@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from "lucide-react"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 
 interface GenderSelectionProps {
   selectedGender: string
@@ -18,19 +18,26 @@ export default function GenderSelection({ selectedGender, onSelect, onNext, onPr
     { id: "outros", label: "Outros" },
   ]
 
-  // Efeito para avançar automaticamente quando uma opção é selecionada
+  // Estado para rastrear se uma nova seleção foi feita nesta renderização
+  const [newSelection, setNewSelection] = useState(false)
+
+  // Efeito para avançar automaticamente apenas quando uma nova seleção é feita
   useEffect(() => {
-    if (selectedGender) {
+    if (newSelection && selectedGender) {
       const timer = setTimeout(() => {
         onNext()
-      }, 500) // Pequeno delay para mostrar a seleção
+        setNewSelection(false) // Resetar após avançar
+      }, 500)
       return () => clearTimeout(timer)
     }
-  }, [selectedGender, onNext])
+  }, [newSelection, selectedGender, onNext])
 
   const handleSelect = (gender: string) => {
-    onSelect(gender)
-    // O avanço automático será feito pelo useEffect
+    // Só considerar como nova seleção se for diferente da atual
+    if (gender !== selectedGender) {
+      onSelect(gender)
+      setNewSelection(true) // Marcar que uma nova seleção foi feita
+    }
   }
 
   return (
