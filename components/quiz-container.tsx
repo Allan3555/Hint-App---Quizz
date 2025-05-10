@@ -136,7 +136,7 @@ export default function QuizContainer() {
       console.log("Enviando dados para o webhook com email:", email)
 
       // Send data to webhook
-      const response = await fetch("https://webhook.autominds.com.br/webhook/mao-quizz", {
+      const response = await fetch("https://webhook.oportunidadesahora.shop/webhook/mao-quizz", {
         method: "POST",
         body: formData,
       })
