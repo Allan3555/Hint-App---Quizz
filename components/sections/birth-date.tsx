@@ -114,6 +114,8 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
 
       // Create date string in YYYY-MM-DD format without timezone conversion
       const formattedDate = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`
+
+      console.log("Data selecionada:", formattedDate)
       onSelect(formattedDate)
 
       setError("")
@@ -122,7 +124,10 @@ export default function BirthDate({ selectedDate, onSelect, onNext, onPrev }: Bi
 
   const handleNext = () => {
     if (selectedDate) {
+      console.log("Avançando com a data:", selectedDate)
       onNext()
+    } else {
+      console.error("Tentativa de avançar sem data selecionada")
     }
   }
 

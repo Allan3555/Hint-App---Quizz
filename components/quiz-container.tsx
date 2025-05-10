@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import Introduction from "./sections/introduction"
 import GenderSelection from "./sections/gender-selection"
@@ -30,6 +30,17 @@ export type QuizData = {
   email: string
 }
 
+// Função auxiliar para chamar o fbq de forma segura
+const trackEvent = (eventName: string, params?: any) => {
+  if (typeof window !== "undefined" && window.fbq) {
+    try {
+      window.fbq(eventName, params)
+    } catch (error) {
+      console.error("Erro ao rastrear evento:", error)
+    }
+  }
+}
+
 export default function QuizContainer() {
   const [currentSection, setCurrentSection] = useState(1)
   const [direction, setDirection] = useState(0) // -1 for backward, 1 for forward
@@ -45,6 +56,24 @@ export default function QuizContainer() {
     palmImage: null,
     email: "",
   })
+
+  // Rastrear progresso do quiz para o Facebook Pixel
+  useEffect(() => {
+    // Rastrear início do quiz
+    if (currentSection === 1) {
+      trackEvent("trackCustom", "QuizStarted")
+    }
+
+    // Rastrear progresso do quiz
+    if (currentSection > 1) {
+      trackEvent("trackCustom", "QuizProgress", { step: currentSection })
+    }
+
+    // Rastrear conclusão do quiz (quando chega na tela de email)
+    if (currentSection === 12) {
+      trackEvent("trackCustom", "QuizCompleted")
+    }
+  }, [currentSection])
 
   const updateQuizData = (key: keyof QuizData, value: any) => {
     setQuizData((prev) => ({ ...prev, [key]: value }))
@@ -77,6 +106,12 @@ export default function QuizContainer() {
   }
 
   const submitQuizData = async (email: string) => {
+    // Garantir que o email seja definido antes de prosseguir
+    if (!email) {
+      console.error("Email não fornecido")
+      return
+    }
+
     updateQuizData("email", email)
 
     try {
@@ -94,11 +129,20 @@ export default function QuizContainer() {
 
       formData.append("email", email)
 
+      // Rastrear evento de envio de email para o Facebook Pixel
+      trackEvent("track", "Lead", { content_name: "Linha do Destino" })
+
+      // Adicionar um log para debug
+      console.log("Enviando dados para o webhook com email:", email)
+
       // Send data to webhook
       const response = await fetch("https://webhook.autominds.com.br/webhook/mao-quizz", {
         method: "POST",
         body: formData,
       })
+
+      // Adicionar um pequeno delay antes do redirecionamento para garantir que o webhook seja processado
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
       // Redirect directly to sales page after submission
       window.location.href = "https://lplinhadodestino.vercel.app/"
@@ -225,7 +269,7 @@ export default function QuizContainer() {
   return (
     <Card className="quiz-container shadow-lg border-none mystical-bg">
       <div className="flex justify-center mb-4">
-        <h1 className="text-2xl font-bold text-primary">Quiz de Quiromancia</h1>
+        <h1 className="text-2xl font-bold text-primary">Linha do Destino</h1>
       </div>
       <div className="mb-4 w-full bg-gray-200 h-2 rounded-full overflow-hidden">
         <div

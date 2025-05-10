@@ -8,16 +8,34 @@ import { useState, useRef, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+// Função auxiliar para chamar o fbq de forma segura
+const trackEvent = (eventName: string, params?: any) => {
+  if (typeof window !== "undefined" && window.fbq) {
+    try {
+      window.fbq(eventName, params)
+    } catch (error) {
+      console.error("Erro ao rastrear evento:", error)
+    }
+  }
+}
+
 interface ResultProps {
   onSubmit: (email: string) => void
   onPrev: () => void
 }
 
 export default function Result({ onSubmit, onPrev }: ResultProps) {
+  // Garantir que showEmailForm seja sempre true inicialmente
   const [email, setEmail] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [showEmailForm, setShowEmailForm] = useState(true)
+
+  // Adicionar um useEffect para garantir que o formulário seja exibido
+  useEffect(() => {
+    // Garantir que o formulário de email seja exibido
+    setShowEmailForm(true)
+  }, [])
 
   // Background animation for the email form
   useEffect(() => {
@@ -253,12 +271,24 @@ export default function Result({ onSubmit, onPrev }: ResultProps) {
     }
   }, [showEmailForm])
 
+  // No handleSubmit, vamos adicionar logs para debug
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (email) {
+      console.log("Formulário de email enviado com:", email)
       setIsSubmitting(true)
+
+      // Rastrear evento de envio de formulário para o Facebook Pixel
+      trackEvent("track", "SubmitApplication", {
+        content_name: "Email Submission",
+        content_category: "Linha do Destino",
+        value: email,
+      })
+
       // Submit email and redirect directly to sales page
       onSubmit(email)
+    } else {
+      console.error("Tentativa de envio sem email")
     }
   }
 
@@ -318,7 +348,7 @@ export default function Result({ onSubmit, onPrev }: ResultProps) {
                         Processando...
                       </>
                     ) : (
-                      "Receber minha quiromancia"
+                      "Receber minha análise"
                     )}
                   </Button>
 

@@ -21,8 +21,10 @@ export default function Introduction({ onNext }: IntroductionProps) {
       </div>
 
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold text-primary">Encontre sua felicidade</h2>
-        <p className="text-lg text-gray-700 dark:text-gray-300">com previsões altamente personalizadas</p>
+        <h2 className="text-2xl font-bold text-primary">Linha do Destino</h2>
+        <p className="text-lg text-gray-700 dark:text-gray-300">
+          Encontre sua felicidade com previsões altamente personalizadas
+        </p>
       </div>
 
       <div className="grid grid-cols-3 gap-3 w-full">
